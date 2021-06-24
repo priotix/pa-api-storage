@@ -1,5 +1,5 @@
-FROM keymetrics/pm2:8-alpine
-MAINTAINER priotix
+FROM keymetrics/pm2:14-alpine
+LABEL maintainer=priotix
 
 RUN apk add --no-cache python build-base
 
