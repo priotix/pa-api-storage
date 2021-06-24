@@ -15,14 +15,16 @@ class FsManager {
    * @param {Object} payload
    * @param {string} payload.fileName
    * @param {string} payload.filePath
-   * @returns {fs.WriteStream} Stream object
+   * @returns {Object} Object which contains the stream and file path
    * @description Create a file in filesystem and return the stream
    */
   static createFileStream(payload) {
     const { filePath, fileName } = payload;
     const fullPath = path.join(filePath, fileName);
 
-    return fs.createWriteStream(fullPath);
+    return {
+      fileStream: fs.createWriteStream(fullPath),
+      fullPath,
   }
 
   /**
