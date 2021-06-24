@@ -1,0 +1,7 @@
+/.project
+node_modules
+.env
+.idea
+cities1000.txt
+codes_*.json
+countries.emoji.json

@@ -1,0 +1,15 @@
+{
+  "apps":[
+    {
+      "name": "api-storage",
+      "script": "./server.js",
+      "watch": true,
+      "env_development": {
+        "NODE_ENV": "development",
+        "node_args": [
+          "--inspect=0.0.0.0"
+        ]
+      }
+    }
+  ]
+}

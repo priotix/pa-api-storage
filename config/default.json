@@ -1,0 +1,12 @@
+{
+  "db": {
+    "user": "api"
+  },
+  "port": 3101,
+  "itemStatesList": ["pending", "active"],
+  "itemStates": {
+    "pending": "pending",
+    "active": "active"
+  },
+  "itemTypesList": ["file", "dir"]
+}

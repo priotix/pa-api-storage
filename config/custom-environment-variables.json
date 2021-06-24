@@ -1,0 +1,10 @@
+{
+  "db": {
+    "pwd": "DB_PSWD",
+    "db": "DB_CONNECTION_STRING",
+    "readPreference": "DB_READ_PREFERENCE"
+  },
+  "auth2Server": {
+    "host": "API_AUTH_HOST"
+  }
+}
