@@ -25,6 +25,7 @@ class FsManager {
     return {
       fileStream: fs.createWriteStream(fullPath),
       fullPath,
+    };
   }
 
   /**
