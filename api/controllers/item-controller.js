@@ -2,7 +2,7 @@ const aqp = require('api-query-params');
 const { ItemModel } = require('../../app/models/item-model');
 
 class ItemsController {
-  static async lsitItems(ctx) {
+  static async listItems(ctx) {
     const {
       skip,
       limit,
@@ -10,7 +10,7 @@ class ItemsController {
       filter,
     } = aqp(ctx.query);
 
-    const news = await ItemModel.lsitItems({
+    const items = await ItemModel.listItems({
       skip,
       limit,
       sort,
@@ -18,7 +18,7 @@ class ItemsController {
     });
 
     ctx.status = 200;
-    ctx.body = news;
+    ctx.body = items;
   }
 }
 

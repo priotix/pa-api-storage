@@ -56,10 +56,10 @@ mainRouter.get('/', async (ctx) => {
 });
 
 // ------------ Load Routers ------------ //
-const authRouter = require('./api/routes/auth-router');
+const itemRouter = require('./api/routes/item-router');
 
 // ---------- Connect Routers ---------- //
 app.use(mainRouter.routes());
-app.use(authRouter.routes());
+app.use(itemRouter.routes());
 
 module.exports = app;

@@ -3,6 +3,8 @@ const config = require('config');
 const lodash = require('lodash');
 const mongoose = require('mongoose');
 
+const { ObjectID } = require('mongodb');
+
 const Mongoose = bluebird.promisifyAll(mongoose);
 
 const ItemSchema = new Mongoose.Schema({
@@ -63,10 +65,22 @@ ItemSchema.statics.createItem = async function createItem(itemData) {
   return item;
 };
 
-ItemSchema.statics.getItems = async function getItems(filter, sort, skip = 0, limit = 20) {
+ItemSchema.statics.listItems = async function listItems(payload) {
+  const {
+    filter,
+    sort,
+    skip = 0,
+    limit = 20,
+  } = payload;
+
+  const { parent, ...findQuery } = filter;
+  if (parent) {
+    findQuery['parentIds.0'] = ObjectID(parent);
+  }
+
   const resp = await bluebird.all([
-    ItemModel.find(filter).sort(sort).skip(skip).limit(limit),
-    ItemModel.find(filter).count(),
+    ItemModel.find(findQuery).sort(sort).skip(skip).limit(limit),
+    ItemModel.find(findQuery).countDocuments(),
   ]);
 
   return {
