@@ -73,9 +73,13 @@ ItemSchema.statics.listItems = async function listItems(payload) {
     limit = 20,
   } = payload;
 
-  const { parent, ...findQuery } = filter;
+  const { parent, owner, ...findQuery } = filter;
   if (parent) {
     findQuery['parentIds.0'] = ObjectID(parent);
+  }
+
+  if (owner) {
+    findQuery.owner = ObjectID(owner);
   }
 
   const resp = await bluebird.all([

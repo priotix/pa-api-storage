@@ -1,4 +1,7 @@
 const aqp = require('api-query-params');
+
+const Identity = require('../../libs/auth/identity');
+
 const { ItemModel } = require('../../app/models/item-model');
 
 class ItemsController {
@@ -9,6 +12,8 @@ class ItemsController {
       sort,
       filter,
     } = aqp(ctx.query);
+
+    filter.owner = Identity.getUserId(ctx);
 
     const items = await ItemModel.listItems({
       skip,
