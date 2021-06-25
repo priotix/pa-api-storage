@@ -13,4 +13,24 @@ schemes.listItems = {
   }),
 };
 
+schemes.createItem = {
+  body: Joi.object().keys({
+    name: Joi.string().required(),
+  }),
+};
+
+schemes.updateItem = {
+  body: Joi.object().keys({
+    name: Joi.string().required(),
+  }),
+};
+
+schemes.uploadItem = {
+  params: Joi.object().keys({
+    name: Joi.string().required(),
+    size: Joi.number().required(),
+    parant: Joi.string(),
+  }),
+};
+
 module.exports = schemes;

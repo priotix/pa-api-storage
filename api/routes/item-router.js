@@ -5,6 +5,7 @@ const itemSchema = require('../validations/item-schema');
 
 const validate = require('../../libs/validate');
 const setupAuthorization = require('../../libs/auth');
+const { single: singleMultipartStream } = require('../../libs/multipart-stream');
 
 const authorize = setupAuthorization('general');
 
@@ -15,6 +16,34 @@ itemRouter.get(
   authorize,
   validate(itemSchema.listItems),
   itemCtrl.listItems,
+);
+
+itemRouter.post(
+  '/items',
+  authorize,
+  validate(itemSchema.createItem),
+  itemCtrl.createItem,
+);
+
+itemRouter.put(
+  '/items/:itemId',
+  authorize,
+  validate(itemSchema.updateItem),
+  itemCtrl.updateItem,
+);
+
+itemRouter.delete(
+  '/items/:itemId',
+  authorize,
+  itemCtrl.deleteItem,
+);
+
+itemRouter.post(
+  '/items/upload',
+  authorize,
+  validate(itemSchema.uploadItem),
+  singleMultipartStream,
+  itemCtrl.uploadItem,
 );
 
 module.exports = itemRouter;
