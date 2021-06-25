@@ -6,6 +6,10 @@ const StorageManager = require('../../libs/storage-manager');
 
 const { ItemModel } = require('../../app/models/item-model');
 
+const PayloadToLarge = require('../../libs/errors/payload-too-large');
+const BadRequest = require('../../libs/errors/bad-request-error');
+
+const defaultFileSize = config.get('defaultFileSize');
 class ItemsController {
   static async listItems(ctx) {
     const {
@@ -29,10 +33,17 @@ class ItemsController {
   }
 
   static async uploadItem(ctx) {
-    const { name, parent, size } = ctx.params;
+    const { name, parent, size = defaultFileSize } = ctx.params;
+
+    const owner = Identity.getUserId(ctx);
+
+    if (!StorageManager.IsValidFileSize(owner, size)) {
+      throw PayloadToLarge(size);
+    }
+
     const itemData = { name };
 
-    itemData.owner = Identity.getUserId(ctx);
+    itemData.owner = owner;
     itemData.type = config.get('itemTypes.file');
     if (parent) {
       itemData.parents = await ItemModel.getItemParents(parent);
@@ -40,6 +51,10 @@ class ItemsController {
 
     const item = await ItemModel.createItem(itemData);
     const fileMeta = StorageManager.saveStream(item.generatePath(), ctx.filemeta.file, size);
+    if (!fileMeta) {
+      throw BadRequest('File is larger then requested', 'storage');
+    }
+
     await item.updateData(fileMeta);
 
     ctx.status = 200;

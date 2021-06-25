@@ -3,8 +3,8 @@
     "user": "api"
   },
   "port": 3101,
-  "itemStatusesList": ["pending", "active", "deleted"],
-  "itemStatuses": {
+  "itemStatusList": ["pending", "active", "deleted"],
+  "itemStatus": {
     "pending": "pending",
     "active": "active",
     "deleted": "deleted"
@@ -13,5 +13,12 @@
   "itemTypes": {
     "file": "file",
     "dir": "dir"
-  }
+  },
+  "storageStatusList": ["active", "inactive"],
+  "storageStatus": {
+    "default": "inactive"
+  },
+  "storageMountPath": "/storages",
+  "storageSelectTresholdMultipiler": 10,
+  "defaultFileSize": 5242880
 }
