@@ -69,12 +69,18 @@ StorageSchema.statics.updateStorage = async function updateStorage(storageId, da
   }
 
   await storage.updateData(data);
+
   return storage;
 };
 
 StorageSchema.statics.getFittingStorage = async function getFittingStorage(fileSize) {
-  const storage = StorageModel.findOne({ freeSpace: { $gt: fileSize * storageSelectTresholdMultiplier } });
-  if (storage) {
+  const storage = StorageModel.findOne(
+    { freeSpace: { $gt: fileSize * storageSelectTresholdMultiplier } },
+    null,
+    { sort: { freeSpace: 1 } },
+  );
+
+  if (!storage) {
     throw NotFoundError('Storage not found', 'storage');
   }
 
