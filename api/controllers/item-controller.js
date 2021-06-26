@@ -9,6 +9,7 @@ const { ItemModel } = require('../../app/models/item-model');
 
 const PayloadToLarge = require('../../libs/errors/payload-too-large');
 const BadRequest = require('../../libs/errors/bad-request-error');
+const { UserModel } = require('../../app/models/user-model');
 
 const defaultFileSize = config.get('defaultFileSize');
 class ItemController {
@@ -51,12 +52,16 @@ class ItemController {
     }
 
     const item = await ItemModel.createItem(itemData);
-    const fileMeta = StorageManager.saveStream(item.generatePath(), ctx.filemeta.file, size);
+    const fileMeta = await StorageManager.saveStream(item.generatePath(), ctx.filemeta.file, size);
     if (!fileMeta) {
       throw BadRequest('File is larger then requested', 'storage');
     }
 
     await item.update({ ...fileMeta, status: config.get('itemStatus.active') });
+
+    const fileSize = fileMeta.size;
+
+    UserModel.changeUsedStorage(owner, fileSize);
 
     ctx.status = 200;
     ctx.body = item;
