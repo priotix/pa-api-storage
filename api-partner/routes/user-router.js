@@ -6,12 +6,12 @@ const userSchema = require('../validations/user-schema');
 const validate = require('../../libs/validate');
 const setupAuthorization = require('../../libs/auth');
 
-const authorize = setupAuthorization('general');
+const authorize = setupAuthorization('key');
 
 const userRouter = new Router();
 
 userRouter.post(
-  '/users',
+  '/api/users',
   authorize,
   validate(userSchema.createUser),
   userCtrl.createUser,

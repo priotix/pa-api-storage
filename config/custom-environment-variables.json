@@ -6,5 +6,6 @@
   },
   "auth2Server": {
     "host": "API_AUTH_HOST"
-  }
+  },
+  "authorizationKey": "AUTHORIZATION_KEY"
 }

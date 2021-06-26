@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 
 const Mongoose = bluebird.promisifyAll(mongoose);
 
+const NotFoundError = require('../../libs/errors/not-found-error');
+
 const UserTypeSchema = new Mongoose.Schema({
   size: {
     type: Number,
@@ -28,7 +30,18 @@ UserTypeSchema.set('toJSON', {
 });
 
 // package user type model
-const UserTypeModel = Mongoose.model('UserType', UserTypeSchema);
+let UserTypeModel;
+
+UserTypeSchema.statics.getUserType = async function getUserType(filter) {
+  const userType = UserTypeModel.findOne(filter);
+  if (!userType) {
+    throw NotFoundError('User type not found', 'user-type');
+  }
+
+  return userType;
+};
+
+UserTypeModel = Mongoose.model('UserType', UserTypeSchema);
 
 module.exports = {
   UserTypeSchema,

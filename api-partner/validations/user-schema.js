@@ -4,7 +4,8 @@ const schemes = {};
 
 schemes.createUser = {
   body: Joi.object().keys({
-    name: Joi.string().required(),
+    userId: Joi.string().required(),
+    name: Joi.string(),
   }),
 };
 

@@ -20,5 +20,6 @@
   },
   "storageMountPath": "/storages",
   "storageSelectTresholdMultipiler": 10,
-  "defaultFileSize": 5242880
+  "defaultFileSize": 5242880,
+  "defaultUserType": "6094f63a09c706a872a9d743"
 }

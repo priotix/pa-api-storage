@@ -1,5 +1,6 @@
 const bluebird = require('bluebird');
 const mongoose = require('mongoose');
+const config = require('config');
 
 const { ObjectID } = require('mongodb');
 const NotFoundError = require('../../libs/errors/not-found-error');
@@ -14,6 +15,7 @@ const UserSchema = new Mongoose.Schema({
   userTypeId: {
     type: Mongoose.Schema.Types.ObjectId,
     ref: 'user-types',
+    default: config.get('defaultUserType'),
   },
 }, { timestamps: true });
 

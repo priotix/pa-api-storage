@@ -26,6 +26,14 @@ function authErrorHandler(reason) {
 
 service.validateToken = async function validateToken(token, audience) {
   console.log('Validating access token');
+  if (audience === 'key') {
+    const key = config.get('authorizationKey');
+    if (config.get('authorizationKey') !== token) {
+      throw new AuthFailedError('Authorization failed', 401);
+    }
+
+    return { userId: key };
+  }
 
   const options = {
     url: `${config.get('auth2Server.host')}/oauth/authenticate`,
