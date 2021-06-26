@@ -35,11 +35,11 @@ UserSchema.set('toJSON', {
 // package user model
 let UserModel;
 
-UserSchema.statics.createUser = async function createUser(itemData) {
-  const item = new UserModel(itemData);
-  await item.save();
+UserSchema.statics.createUser = async function createUser(userData) {
+  const user = new UserModel(userData);
+  await user.save();
 
-  return item;
+  return user;
 };
 
 UserSchema.statics.updateUser = async function updateUser(userId, userData) {
@@ -49,6 +49,19 @@ UserSchema.statics.updateUser = async function updateUser(userId, userData) {
   }
 
   await UserModel.updateOne({ _id: ObjectID(userId) }, { $set: userData });
+  return user;
+};
+
+UserSchema.statics.changeUsedStorage = async function changeUsedStorage(userId, storageDiff) {
+  const user = UserModel.findOne({ _id: ObjectID(userId) });
+  if (user) {
+    throw NotFoundError('User not found', 'user');
+  }
+
+  user.usedStorageSize += storageDiff;
+
+  await user.save();
+
   return user;
 };
 
