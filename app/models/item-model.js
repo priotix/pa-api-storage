@@ -27,8 +27,8 @@ const ItemSchema = new Mongoose.Schema({
   },
   status: {
     type: String,
-    enum: config.get('itemStatesList'),
-    default: config.get('itemStates.pending'),
+    enum: config.get('itemStatusList'),
+    default: config.get('itemStatus.pending'),
   },
   type: {
     type: String,

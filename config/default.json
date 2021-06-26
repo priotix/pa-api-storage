@@ -13,5 +13,12 @@
   "itemType": {
     "file": "file",
     "dir": "dir"
-  }
+  },
+  "storageStatusList": ["active", "inactive"],
+  "storageStatus": {
+    "default": "inactive"
+  },
+  "storageMountPath": "/storages",
+  "storageSelectTresholdMultipiler": 10,
+  "defaultFileSize": 5242880
 }
