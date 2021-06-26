@@ -14,6 +14,7 @@ class StorageManager {
 
     let fullSize = 0;
     let isFileSizeCorrect = true;
+
     readStream.on('data', (data) => {
       fullSize += data.length;
       if (fullSize > size) {
@@ -37,12 +38,14 @@ class StorageManager {
         size: fullSize,
       };
     }
+
     return null;
   }
 
   static async getFittingStoragePath(fileSize) {
     // TODO handle exception
     const storage = StorageModel.getFittingStorage(fileSize);
+
     return {
       id: storage._id,
       path: path.join(storageMountPath, storage.path),
