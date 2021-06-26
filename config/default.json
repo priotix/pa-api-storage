@@ -3,14 +3,14 @@
     "user": "api"
   },
   "port": 3101,
-  "itemStatusesList": ["pending", "active", "deleted"],
-  "itemStatuses": {
+  "itemStatusList": ["pending", "active", "deleted"],
+  "itemStatus": {
     "pending": "pending",
     "active": "active",
     "deleted": "deleted"
   },
-  "itemTypesList": ["file", "dir"],
-  "itemTypes": {
+  "itemTypeList": ["file", "dir"],
+  "itemType": {
     "file": "file",
     "dir": "dir"
   }

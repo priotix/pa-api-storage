@@ -1,3 +1,4 @@
+const fs = require('fs');
 const config = require('config');
 const aqp = require('api-query-params');
 
@@ -6,7 +7,7 @@ const StorageManager = require('../../libs/storage-manager');
 
 const { ItemModel } = require('../../app/models/item-model');
 
-class ItemsController {
+class ItemController {
   static async listItems(ctx) {
     const {
       skip,
@@ -33,14 +34,14 @@ class ItemsController {
     const itemData = { name };
 
     itemData.owner = Identity.getUserId(ctx);
-    itemData.type = config.get('itemTypes.file');
+    itemData.type = config.get('itemType.file');
     if (parent) {
       itemData.parents = await ItemModel.getItemParents(parent);
     }
 
     const item = await ItemModel.createItem(itemData);
     const fileMeta = StorageManager.saveStream(item.generatePath(), ctx.filemeta.file, size);
-    await item.updateData(fileMeta);
+    await item.update({ ...fileMeta, status: config.get('itemStatus.active') });
 
     ctx.status = 200;
     ctx.body = item;
@@ -48,9 +49,15 @@ class ItemsController {
 
   static async deleteItem(ctx) {
     const { itemId } = ctx.params;
+    const owner = Identity.getUserId(ctx);
 
-    // fs delete item
-    await ItemModel.deleteItem(itemId);
+    const item = await ItemModel.getItem({ id: itemId, owner });
+    if (item.type === config.get('itemType.file')) {
+      fs.unlinkSync(item.path);
+    } else {
+      fs.rmdirSync(item.path, { recursive: true });
+    }
+    await item.delete();
 
     ctx.status = 200;
   }
@@ -58,8 +65,9 @@ class ItemsController {
   static async updateItem(ctx) {
     const { itemId } = ctx.params;
     const { name } = ctx.request.body;
+    const owner = Identity.getUserId(ctx);
 
-    const item = await ItemModel.updateItem(itemId, { name });
+    const item = await ItemModel.updateItem({ itemId, owner }, { name });
 
     ctx.status = 200;
     ctx.body = item;
@@ -68,11 +76,11 @@ class ItemsController {
   static async createItem(ctx) {
     const { name } = ctx.request.body;
 
-    const item = await ItemModel.createItem(itemId, { name });
+    const item = await ItemModel.createItem({ name });
 
     ctx.status = 200;
     ctx.body = item;
   }
 }
 
-module.exports = ItemsController;
+module.exports = ItemController;

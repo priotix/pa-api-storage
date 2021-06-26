@@ -32,7 +32,7 @@ const ItemSchema = new Mongoose.Schema({
   },
   type: {
     type: String,
-    enum: config.get('itemTypesList'),
+    enum: config.get('itemTypeList'),
     required: true,
   },
   path: {
@@ -57,7 +57,7 @@ ItemSchema.set('toJSON', {
   },
 });
 
-// package user model
+// package item model
 let ItemModel;
 
 ItemSchema.statics.createItem = async function createItem(itemData) {
@@ -86,10 +86,10 @@ ItemSchema.statics.listItems = async function listItems(payload) {
   } = payload;
 
   const { parent, owner, ...findQuery } = filter;
+  findQuery.status = config.get('itemStatus.active');
   if (parent) {
     findQuery['parentIds.0'] = ObjectID(parent);
   }
-
   if (owner) {
     findQuery.owner = ObjectID(owner);
   }
@@ -105,49 +105,106 @@ ItemSchema.statics.listItems = async function listItems(payload) {
   };
 };
 
-ItemSchema.statics.deleteItem = async function deleteItem(itemId) {
-  const item = ItemModel.findOne({ _id: ObjectID(itemId) });
+ItemSchema.statics.searchItems = async function searchItems(payload) {
+  const {
+    filter,
+    sort,
+    skip = 0,
+    limit = 20,
+  } = payload;
+
+  const { owner, query, ...findQuery } = filter;
+  findQuery.status = config.get('itemStatus.active');
+  findQuery.owner = ObjectID(owner);
+  if (query) {
+    findQuery.$text = { $search: query };
+  }
+
+  const resp = await bluebird.all([
+    ItemModel.find(findQuery).sort(sort).skip(skip).limit(limit),
+    ItemModel.find(findQuery).countDocuments(),
+  ]);
+
+  return {
+    documents: resp[0].map(async (doc) => {
+      let itemPath = '';
+      if (doc.parentIds) {
+        const parents = await ItemModel.find({ _id: doc.parentIds });
+        itemPath = path.join(parents.reduceRight((acc, parent) => {
+          acc = path.join(acc, String(parent.name));
+          return acc;
+        }, ''));
+      }
+
+      doc.path = path.join(itemPath, doc.name);
+      return doc;
+    }),
+    total: resp[1],
+  };
+};
+
+ItemSchema.statics.deleteItem = async function deleteItem({ itemId, owner }) {
+  const item = ItemModel.findOne({ _id: ObjectID(itemId), owner: ObjectID(owner) });
   if (!item) {
     throw NotFoundError('Item not found', 'item');
   }
 
-  if (item.type === config.get('itemTypes.dir')) {
-    await ItemModel.deleteMany({
+  if (item.type === config.get('itemType.dir')) {
+    await ItemModel.updateMany({
       $or: [
-        { _id: ObjectID(itemId) },
-        { parentIds: ObjectID(itemId) },
+        { _id: ObjectID(itemId), owner: ObjectID(owner) },
+        { parentIds: ObjectID(itemId), owner: ObjectID(owner) },
       ],
-    });
+    }, { $set: { status: config.get('itemStatus.deleted') } });
   } else {
-    await ItemModel.deleteOne({ _id: ObjectID(itemId) });
+    await ItemModel.updateOne(
+      { _id: ObjectID(itemId), owner: ObjectID(owner) },
+      { $set: { status: config.get('itemStatus.deleted') } },
+    );
   }
 };
 
-ItemSchema.statics.updateItem = async function updateItem(itemId, itemData) {
-  const item = ItemModel.findOne({ _id: ObjectID(itemId) });
+ItemSchema.statics.updateItem = async function updateItem({ itemId, owner }, itemData) {
+  const item = ItemModel.findOne({ _id: ObjectID(itemId), owner: ObjectID(owner) });
   if (item) {
     throw NotFoundError('Item not found', 'item');
   }
 
-  await item.updateData(itemData);
+  await item.update(itemData);
   return item;
 };
 
-ItemSchema.methods.updateData = async function updateData(itemData) {
+ItemSchema.statics.getItem = async function getItem({ itemId, owner }) {
+  const item = ItemModel.findOne({ _id: ObjectID(itemId), owner: ObjectID(owner) });
+  if (item) {
+    throw NotFoundError('Item not found', 'item');
+  }
+
+  return item;
+};
+
+ItemSchema.methods.update = async function update(itemData) {
   lodash.extend(this, itemData);
 
   await this.save();
 };
 
+ItemSchema.methods.delete = async function deleteData() {
+  this.status = config.get('itemStatus.delete');
+
+  await this.save();
+};
+
 ItemSchema.methods.generatePath = function generatePath() {
-  let itemPath = '';
+  let itemPath = `${String(this.owner)}`;
   if (this.parentIds) {
-    this.parentIds.reduceRight((_, parent) => {
-      itemPath = path.join(itemPath, String(parent));
-    }, null);
+    itemPath = this.parentIds.reduceRight((acc, parent) => {
+      acc = path.join(acc, String(parent));
+      return acc;
+    }, itemPath);
   }
 
-  itemPath = String(this._id);
+  itemPath = path.join(itemPath, String(this._id));
 
   return itemPath;
 };

@@ -9,7 +9,7 @@ schemes.listItems = {
     skip: Joi.number(),
     sort: Joi.string(),
     parant: Joi.string(),
-    type: Joi.string().valid(config.get('itemTypesList')),
+    type: Joi.string().valid(config.get('itemTypeList')),
   }),
 };
 
