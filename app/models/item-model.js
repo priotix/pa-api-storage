@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 
 const { ObjectID } = require('mongodb');
 const NotFoundError = require('../../libs/errors/not-found-error');
+const BadRequestError = require('../../libs/errors/bad-request-error');
 
 const Mongoose = bluebird.promisifyAll(mongoose);
 
@@ -62,7 +63,12 @@ let ItemModel;
 
 ItemSchema.statics.createItem = async function createItem(itemData) {
   const item = new ItemModel(itemData);
-  await item.save();
+
+  try {
+    await item.save();
+  } catch (err) {
+    throw new BadRequestError('Invalide data', 'item-data');
+  }
 
   return item;
 };
@@ -155,7 +161,12 @@ ItemSchema.statics.updateItem = async function updateItem({ itemId, owner }, ite
     throw new NotFoundError('Item not found', 'item');
   }
 
-  await item.update(itemData);
+  try {
+    await item.update(itemData);
+  } catch (err) {
+    throw new BadRequestError('Invalide data', 'item-data');
+  }
+
   return item;
 };
 
