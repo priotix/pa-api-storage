@@ -34,6 +34,27 @@ class ItemController {
     ctx.body = items;
   }
 
+  static async searchItems(ctx) {
+    const {
+      skip,
+      limit,
+      sort,
+      filter,
+    } = aqp(ctx.query);
+
+    filter.owner = Identity.getUserId(ctx);
+
+    const items = await ItemModel.searchItems({
+      skip,
+      limit,
+      sort,
+      filter,
+    });
+
+    ctx.status = 200;
+    ctx.body = items;
+  }
+
   static async uploadItem(ctx) {
     const { name, parent, size = defaultFileSize } = ctx.query;
 

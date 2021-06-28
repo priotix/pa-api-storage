@@ -82,7 +82,7 @@ ItemSchema.statics.listItems = async function listItems(payload) {
     filter,
     sort,
     skip = 0,
-    limit = 20,
+    limit = 1000,
   } = payload;
 
   const { parent, owner, ...findQuery } = filter;
@@ -119,7 +119,7 @@ ItemSchema.statics.searchItems = async function searchItems(payload) {
   findQuery.status = config.get('itemStatus.active');
   findQuery.owner = ObjectID(owner);
   if (query) {
-    findQuery.$text = { $search: query };
+    findQuery.name = new RegExp(`.*${query}*.`, 'i');
   }
 
   const resp = await bluebird.all([
@@ -128,9 +128,9 @@ ItemSchema.statics.searchItems = async function searchItems(payload) {
   ]);
 
   return {
-    documents: resp[0].map(async (doc) => {
+    documents: await bluebird.map(resp[0], async (doc) => {
       let itemPath = '';
-      if (doc.parentIds) {
+      if (doc.parentIds.length) {
         const parents = await ItemModel.find({ _id: doc.parentIds });
         itemPath = path.join(parents.reduceRight((acc, parent) => {
           acc = path.join(acc, String(parent.name));
@@ -146,7 +146,11 @@ ItemSchema.statics.searchItems = async function searchItems(payload) {
 };
 
 ItemSchema.statics.updateItem = async function updateItem({ itemId, owner }, itemData) {
-  const item = await ItemModel.findOne({ _id: ObjectID(itemId), owner: ObjectID(owner), status: config.get('itemStatus.active') });
+  const item = await ItemModel.findOne({
+    _id: ObjectID(itemId),
+    owner: ObjectID(owner),
+    status: config.get('itemStatus.active'),
+  });
   if (!item) {
     throw new NotFoundError('Item not found', 'item');
   }
@@ -156,7 +160,11 @@ ItemSchema.statics.updateItem = async function updateItem({ itemId, owner }, ite
 };
 
 ItemSchema.statics.getItem = async function getItem({ itemId, owner }) {
-  const item = await ItemModel.findOne({ _id: ObjectID(itemId), owner: ObjectID(owner), status: config.get('itemStatus.active') });
+  const item = await ItemModel.findOne({
+    _id: ObjectID(itemId),
+    owner: ObjectID(owner),
+    status: config.get('itemStatus.active'),
+  });
   if (!item) {
     throw new NotFoundError('Item not found', 'item');
   }

@@ -13,6 +13,16 @@ schemes.listItems = {
   }),
 };
 
+schemes.searchItems = {
+  query: Joi.object().keys({
+    limit: Joi.number(),
+    skip: Joi.number(),
+    sort: Joi.string(),
+    query: Joi.string(),
+    type: Joi.string().valid(config.get('itemTypeList')),
+  }),
+};
+
 schemes.createItem = {
   body: Joi.object().keys({
     name: Joi.string().required(),
