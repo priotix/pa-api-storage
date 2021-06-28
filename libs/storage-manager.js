@@ -83,6 +83,10 @@ class StorageManager {
 
     return true;
   }
+
+  static async changeFreeStorages(storagesUsedSpaces) {
+    return StorageModel.changeFreeStorages(storagesUsedSpaces);
+  }
 }
 
 module.exports = StorageManager;

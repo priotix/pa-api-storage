@@ -9,7 +9,6 @@ const { ItemModel } = require('../../app/models/item-model');
 const PayloadToLarge = require('../../libs/errors/payload-too-large');
 const BadRequest = require('../../libs/errors/bad-request-error');
 const { UserModel } = require('../../app/models/user-model');
-const { StorageModel } = require('../../app/models/storage-model');
 
 const defaultFileSize = config.get('defaultFileSize');
 class ItemController {
@@ -94,6 +93,10 @@ class ItemController {
 
     await UserModel.changeUsedStorage(owner, fileSize);
 
+    const freeStorageParam = {};
+    freeStorageParam[item.storageId] = -item.size;
+    await StorageManager.changeFreeStorages(freeStorageParam);
+
     ctx.status = 200;
     ctx.body = item;
   }
@@ -107,14 +110,19 @@ class ItemController {
       await StorageManager.removeFile(item.path);
       await item.delete();
       await UserModel.changeUsedStorage(owner, -item.size);
-      await StorageModel.changeUsedStorages([{ id: item.storageId, size: -item.size }]);
+
+      const freeStorageParam = {};
+      freeStorageParam[item.storageId] = item.size;
+      await StorageManager.changeFreeStorages(freeStorageParam);
     } else {
       const storagesUsedSpaces = await item.getStoragesUsedSpaces();
-      await StorageModel.changeUsedStorages(storagesUsedSpaces);
+      await StorageManager.changeFreeStorages(storagesUsedSpaces);
+
       const userUsedSpace = Object.values(storagesUsedSpaces).reduce((acc, space) => {
         acc += space;
         return acc;
       }, 0);
+
       const folderPath = await item.generatePath();
       await StorageManager.removeFolder(Object.keys(storagesUsedSpaces), folderPath);
       await UserModel.changeUsedStorage(owner, -userUsedSpace);
