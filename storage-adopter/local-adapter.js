@@ -19,7 +19,7 @@ class LocalAdapter {
 
   static async removeFolder(folderPath) {
     return new Promise((resolve, reject) => {
-      fs.rmdir(folderPath, (err, data) => {
+      fs.rmdir(folderPath, { recursive: true }, (err, data) => {
         if (err) {
           return reject(err);
         }
