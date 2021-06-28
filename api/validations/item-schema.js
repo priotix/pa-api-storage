@@ -4,7 +4,7 @@ const config = require('config');
 const schemes = {};
 
 schemes.listItems = {
-  params: Joi.object().keys({
+  query: Joi.object().keys({
     limit: Joi.number(),
     skip: Joi.number(),
     sort: Joi.string(),
@@ -26,9 +26,9 @@ schemes.updateItem = {
 };
 
 schemes.uploadItem = {
-  params: Joi.object().keys({
+  query: Joi.object().keys({
     name: Joi.string().required(),
-    size: Joi.number().required(),
+    size: Joi.number(),
     parant: Joi.string(),
   }),
 };

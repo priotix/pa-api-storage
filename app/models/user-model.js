@@ -4,6 +4,7 @@ const config = require('config');
 
 const { ObjectID } = require('mongodb');
 const NotFoundError = require('../../libs/errors/not-found-error');
+const { UserTypeModel } = require('./user-type-model');
 
 const Mongoose = bluebird.promisifyAll(mongoose);
 
@@ -14,7 +15,7 @@ const UserSchema = new Mongoose.Schema({
   },
   userTypeId: {
     type: Mongoose.Schema.Types.ObjectId,
-    ref: 'user-types',
+    ref: UserTypeModel,
     default: config.get('defaultUserType'),
   },
 }, { timestamps: true });
@@ -44,18 +45,27 @@ UserSchema.statics.createUser = async function createUser(userData) {
 
 UserSchema.statics.updateUser = async function updateUser(userId, userData) {
   const user = UserModel.findOne({ _id: ObjectID(userId) });
-  if (user) {
-    throw NotFoundError('User not found', 'user');
+  if (!user) {
+    throw new NotFoundError('User not found', 'user');
   }
 
   await UserModel.updateOne({ _id: ObjectID(userId) }, { $set: userData });
   return user;
 };
 
+UserSchema.statics.getUserFreeSpace = async function getUserFreeSpace(userId) {
+  const user = await UserModel.findOne({ _id: ObjectID(userId) }).populate('userTypeId');
+  if (!user) {
+    throw new NotFoundError('User not found', 'user');
+  }
+
+  return user.userTypeId.size - user.usedStorageSize;
+};
+
 UserSchema.statics.changeUsedStorage = async function changeUsedStorage(userId, storageDiff) {
-  const user = UserModel.findOne({ _id: ObjectID(userId) });
-  if (user) {
-    throw NotFoundError('User not found', 'user');
+  const user = await UserModel.findOne({ _id: ObjectID(userId) });
+  if (!user) {
+    throw new NotFoundError('User not found', 'user');
   }
 
   user.usedStorageSize += storageDiff;

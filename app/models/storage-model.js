@@ -22,11 +22,7 @@ const StorageSchema = new Mongoose.Schema({
   status: {
     type: String,
     enum: config.get('storageStatusList'),
-    default: config.get('storageStatus.default'),
-  },
-  storageId: {
-    type: Mongoose.Schema.Types.ObjectId,
-    ref: 'storages',
+    default: config.get('storageStatus.inactive'),
   },
 }, { timestamps: true });
 
@@ -54,18 +50,18 @@ StorageSchema.statics.createStorage = async function createStorage(data) {
 };
 
 StorageSchema.statics.deleteStorage = async function deleteStorge(storageId) {
-  const item = StorageModel.findOne({ _id: ObjectID(storageId) });
+  const item = await StorageModel.findOne({ _id: ObjectID(storageId) });
   if (!item) {
-    throw NotFoundError('Storage not found', 'storage');
+    throw new NotFoundError('Storage not found', 'storage');
   }
 
   return StorageModel.deleteOne({ _id: ObjectID(storageId) });
 };
 
 StorageSchema.statics.updateStorage = async function updateStorage(storageId, data) {
-  const storage = StorageModel.findOne({ _id: ObjectID(storageId) });
+  const storage = await StorageModel.findOne({ _id: ObjectID(storageId) });
   if (storage) {
-    throw NotFoundError('Storage not found', 'storage');
+    throw new NotFoundError('Storage not found', 'storage');
   }
 
   await storage.updateData(data);
@@ -74,14 +70,14 @@ StorageSchema.statics.updateStorage = async function updateStorage(storageId, da
 };
 
 StorageSchema.statics.getFittingStorage = async function getFittingStorage(fileSize) {
-  const storage = StorageModel.findOne(
+  const storage = await StorageModel.findOne(
     { freeSpace: { $gt: fileSize * storageSelectTresholdMultiplier } },
     null,
     { sort: { freeSpace: 1 } },
   );
 
   if (!storage) {
-    throw NotFoundError('Storage not found', 'storage');
+    throw new NotFoundError('Storage not found', 'storage');
   }
 
   return storage;
@@ -96,6 +92,6 @@ StorageSchema.methods.updateData = async function updateData(data) {
 StorageModel = Mongoose.model('Storage', StorageSchema);
 
 module.exports = {
-  ItemSchema: StorageSchema,
-  ItemModel: StorageModel,
+  StorageSchema,
+  StorageModel,
 };

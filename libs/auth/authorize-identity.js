@@ -13,8 +13,7 @@ async function authorizeIdentity(ctx, next) {
 
   const user = await UserModel.getUserById(ctx.params.user_id);
   if (!user) {
-    const err = new NotFoundError('User not found', 'user');
-    throw err;
+    throw new NotFoundError('User not found', 'user');
   }
 
   if (identity.email !== user.email) {

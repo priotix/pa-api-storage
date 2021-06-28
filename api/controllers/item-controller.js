@@ -35,18 +35,18 @@ class ItemController {
   }
 
   static async uploadItem(ctx) {
-    const { name, parent, size = defaultFileSize } = ctx.params;
+    const { name, parent, size = defaultFileSize } = ctx.query;
 
     const owner = Identity.getUserId(ctx);
 
-    if (!StorageManager.IsValidFileSize(owner, size)) {
-      throw PayloadToLarge(size);
+    if (!(await StorageManager.IsValidFileSize(owner, size))) {
+      throw new PayloadToLarge(size);
     }
 
     const itemData = { name };
 
     itemData.owner = owner;
-    itemData.type = config.get('itemTypes.file');
+    itemData.type = config.get('itemType.file');
     if (parent) {
       itemData.parents = await ItemModel.getItemParents(parent);
     }
@@ -54,14 +54,14 @@ class ItemController {
     const item = await ItemModel.createItem(itemData);
     const fileMeta = await StorageManager.saveStream(item.generatePath(), ctx.filemeta.file, size);
     if (!fileMeta) {
-      throw BadRequest('File is larger then requested', 'storage');
+      throw new BadRequest('File is larger then requested', 'storage');
     }
 
     await item.update({ ...fileMeta, status: config.get('itemStatus.active') });
 
     const fileSize = fileMeta.size;
 
-    UserModel.changeUsedStorage(owner, fileSize);
+    await UserModel.changeUsedStorage(owner, fileSize);
 
     ctx.status = 200;
     ctx.body = item;
@@ -78,6 +78,7 @@ class ItemController {
       fs.rmdirSync(item.path, { recursive: true });
     }
     await item.delete();
+    await UserModel.changeUsedStorage(owner, -item.size);
 
     ctx.status = 200;
   }

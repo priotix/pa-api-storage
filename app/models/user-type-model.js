@@ -33,9 +33,9 @@ UserTypeSchema.set('toJSON', {
 let UserTypeModel;
 
 UserTypeSchema.statics.getUserType = async function getUserType(filter) {
-  const userType = UserTypeModel.findOne(filter);
+  const userType = await UserTypeModel.findOne(filter);
   if (!userType) {
-    throw NotFoundError('User type not found', 'user-type');
+    throw new NotFoundError('User type not found', 'user-type');
   }
 
   return userType;

@@ -70,7 +70,7 @@ ItemSchema.statics.createItem = async function createItem(itemData) {
 ItemSchema.statics.getItemParents = async function getItemParents(parnet) {
   const item = ItemModel.findOne({ _id: ObjectID(parnet) });
   if (!item) {
-    throw NotFoundError('Parent not found', 'item-parent');
+    throw new NotFoundError('Parent not found', 'item-parent');
   }
 
   item.parentIds.unshift(ObjectID(parnet));
@@ -146,7 +146,7 @@ ItemSchema.statics.searchItems = async function searchItems(payload) {
 ItemSchema.statics.deleteItem = async function deleteItem({ itemId, owner }) {
   const item = ItemModel.findOne({ _id: ObjectID(itemId), owner: ObjectID(owner) });
   if (!item) {
-    throw NotFoundError('Item not found', 'item');
+    throw new NotFoundError('Item not found', 'item');
   }
 
   if (item.type === config.get('itemType.dir')) {
@@ -166,8 +166,8 @@ ItemSchema.statics.deleteItem = async function deleteItem({ itemId, owner }) {
 
 ItemSchema.statics.updateItem = async function updateItem({ itemId, owner }, itemData) {
   const item = ItemModel.findOne({ _id: ObjectID(itemId), owner: ObjectID(owner) });
-  if (item) {
-    throw NotFoundError('Item not found', 'item');
+  if (!item) {
+    throw new NotFoundError('Item not found', 'item');
   }
 
   await item.update(itemData);
@@ -177,7 +177,7 @@ ItemSchema.statics.updateItem = async function updateItem({ itemId, owner }, ite
 ItemSchema.statics.getItem = async function getItem({ itemId, owner }) {
   const item = ItemModel.findOne({ _id: ObjectID(itemId), owner: ObjectID(owner) });
   if (item) {
-    throw NotFoundError('Item not found', 'item');
+    throw new NotFoundError('Item not found', 'item');
   }
 
   return item;

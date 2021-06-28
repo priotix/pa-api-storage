@@ -16,7 +16,8 @@
   },
   "storageStatusList": ["active", "inactive"],
   "storageStatus": {
-    "default": "inactive"
+    "inactive": "inactive",
+    "active": "active"
   },
   "storageMountPath": "/storages",
   "storageSelectTresholdMultipiler": 10,
