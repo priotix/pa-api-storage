@@ -115,6 +115,8 @@ class ItemController {
         acc += space;
         return acc;
       }, 0);
+      const folderPath = await item.generatePath();
+      await StorageManager.RemoveFolder(Object.keys(storagesUsedSpaces), folderPath);
       await UserModel.changeUsedStorage(owner, -userUsedSpace);
       await item.deleteRecursive();
     }

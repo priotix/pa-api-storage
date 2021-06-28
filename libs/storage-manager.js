@@ -1,4 +1,5 @@
 const path = require('path');
+const bluebird = require('bluebird');
 const config = require('config');
 const { StorageModel } = require('../app/models/storage-model');
 const { UserModel } = require('../app/models/user-model');
@@ -52,6 +53,16 @@ class StorageManager {
 
   static async removeFile(filePath) {
     return storageAdapter.removeFile(filePath);
+  }
+
+  static async removeFolder(storageIds, folderPath) {
+    const storages = await StorageModel.find({ _id: { $in: storageIds } });
+
+    return bluebird.map(storages, async (storage) => {
+      const fullPath = path.join(storageMountPath, storage.name, folderPath);
+
+      await storageAdapter.removeFolder(fullPath);
+    });
   }
 
   static async getFittingStoragePath(fileSize) {
