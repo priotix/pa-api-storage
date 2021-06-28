@@ -8,7 +8,7 @@ schemes.listItems = {
     limit: Joi.number(),
     skip: Joi.number(),
     sort: Joi.string(),
-    parant: Joi.string(),
+    parent: Joi.string(),
     type: Joi.string().valid(config.get('itemTypeList')),
   }),
 };
@@ -16,6 +16,7 @@ schemes.listItems = {
 schemes.createItem = {
   body: Joi.object().keys({
     name: Joi.string().required(),
+    parent: Joi.string(),
   }),
 };
 
@@ -29,7 +30,7 @@ schemes.uploadItem = {
   query: Joi.object().keys({
     name: Joi.string().required(),
     size: Joi.number(),
-    parant: Joi.string(),
+    parent: Joi.string(),
   }),
 };
 

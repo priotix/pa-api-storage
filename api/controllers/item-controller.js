@@ -95,9 +95,13 @@ class ItemController {
   }
 
   static async createItem(ctx) {
-    const { name } = ctx.request.body;
+    const { name, parent } = ctx.request.body;
+    const itemData = { name };
 
-    const item = await ItemModel.createItem({ name });
+    if (parent) {
+      itemData.parents = await ItemModel.getItemParents(parent);
+    }
+    const item = await ItemModel.createItem(itemData);
 
     ctx.status = 200;
     ctx.body = item;
