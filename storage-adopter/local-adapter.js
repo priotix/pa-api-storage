@@ -2,7 +2,15 @@ const fs = require('fs');
 
 class LocalAdapter {
   static async removeFile(filePath) {
-    return fs.unlink(filePath);
+    return new Promise((resolve, reject) => {
+      fs.unlink(filePath, (err, data) => {
+        if (err) {
+          return reject(err);
+        }
+
+        resolve(data);
+      });
+    });
   }
 
   static async removeFileSync(filePath) {
@@ -12,7 +20,15 @@ class LocalAdapter {
   static async createWriteStream(filePath) {
     const dirPath = filePath.slice(0, filePath.lastIndexOf('/'));
     if (!fs.existsSync(dirPath)) {
-      await fs.mkdir(dirPath, { recursive: true });
+      await new Promise((resolve, reject) => {
+        fs.mkdir(dirPath, { recursive: true }, (err, data) => {
+          if (err) {
+            return reject(err);
+          }
+
+          resolve(data);
+        });
+      });
     }
 
     return fs.createWriteStream(filePath);

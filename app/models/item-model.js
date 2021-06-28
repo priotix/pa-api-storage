@@ -146,7 +146,7 @@ ItemSchema.statics.searchItems = async function searchItems(payload) {
 };
 
 ItemSchema.statics.updateItem = async function updateItem({ itemId, owner }, itemData) {
-  const item = await ItemModel.findOne({ _id: ObjectID(itemId), owner: ObjectID(owner) });
+  const item = await ItemModel.findOne({ _id: ObjectID(itemId), owner: ObjectID(owner), status: config.get('itemStatus.active') });
   if (!item) {
     throw new NotFoundError('Item not found', 'item');
   }
@@ -156,7 +156,7 @@ ItemSchema.statics.updateItem = async function updateItem({ itemId, owner }, ite
 };
 
 ItemSchema.statics.getItem = async function getItem({ itemId, owner }) {
-  const item = await ItemModel.findOne({ _id: ObjectID(itemId), owner: ObjectID(owner) });
+  const item = await ItemModel.findOne({ _id: ObjectID(itemId), owner: ObjectID(owner), status: config.get('itemStatus.active') });
   if (!item) {
     throw new NotFoundError('Item not found', 'item');
   }
@@ -203,7 +203,10 @@ ItemSchema.methods.generatePath = function generatePath() {
 
 ItemSchema.methods.getStoragesUsedSpaces = async function getStoragesUsedSpaces() {
   const items = await ItemModel.find({
-    parentIds: ObjectID(this._id), owner: this.owner, type: config.get('itemType.file'),
+    parentIds: ObjectID(this._id),
+    owner: this.owner,
+    type: config.get('itemType.file'),
+    status: config.get('itemStatus.active'),
   });
   return items.reduce((acc, item) => {
     if (!acc[item.storageId]) {

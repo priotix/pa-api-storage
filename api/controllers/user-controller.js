@@ -1,7 +1,3 @@
-const fs = require('fs');
-const config = require('config');
-const aqp = require('api-query-params');
-
 const Identity = require('../../libs/auth/identity');
 
 const { UserModel } = require('../../app/models/user-model');

@@ -11,7 +11,7 @@ const userRouter = new Router();
 userRouter.get(
   '/users/info',
   authorize,
-  userCtrl.usersInfo,
+  userCtrl.getUserInfo,
 );
 
 module.exports = userRouter;
