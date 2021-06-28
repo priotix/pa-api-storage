@@ -8,13 +8,25 @@ class LocalAdapter {
           return reject(err);
         }
 
-        resolve(data);
+        return resolve(data);
       });
     });
   }
 
   static async removeFileSync(filePath) {
     return fs.unlinkSync(filePath);
+  }
+
+  static async removeFolder(folderPath) {
+    return new Promise((resolve, reject) => {
+      fs.rmdir(folderPath, (err, data) => {
+        if (err) {
+          return reject(err);
+        }
+
+        return resolve(data);
+      });
+    });
   }
 
   static async createWriteStream(filePath) {
@@ -26,7 +38,7 @@ class LocalAdapter {
             return reject(err);
           }
 
-          resolve(data);
+          return resolve(data);
         });
       });
     }
