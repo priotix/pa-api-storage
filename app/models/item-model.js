@@ -68,7 +68,7 @@ ItemSchema.statics.createItem = async function createItem(itemData) {
 };
 
 ItemSchema.statics.getItemParents = async function getItemParents(parnet) {
-  const item = ItemModel.findOne({ _id: ObjectID(parnet) });
+  const item = await ItemModel.findOne({ _id: ObjectID(parnet) });
   if (!item) {
     throw new NotFoundError('Parent not found', 'item-parent');
   }
@@ -145,29 +145,8 @@ ItemSchema.statics.searchItems = async function searchItems(payload) {
   };
 };
 
-ItemSchema.statics.deleteItem = async function deleteItem({ itemId, owner }) {
-  const item = ItemModel.findOne({ _id: ObjectID(itemId), owner: ObjectID(owner) });
-  if (!item) {
-    throw new NotFoundError('Item not found', 'item');
-  }
-
-  if (item.type === config.get('itemType.dir')) {
-    await ItemModel.updateMany({
-      $or: [
-        { _id: ObjectID(itemId), owner: ObjectID(owner) },
-        { parentIds: ObjectID(itemId), owner: ObjectID(owner) },
-      ],
-    }, { $set: { status: config.get('itemStatus.deleted') } });
-  } else {
-    await ItemModel.updateOne(
-      { _id: ObjectID(itemId), owner: ObjectID(owner) },
-      { $set: { status: config.get('itemStatus.deleted') } },
-    );
-  }
-};
-
 ItemSchema.statics.updateItem = async function updateItem({ itemId, owner }, itemData) {
-  const item = ItemModel.findOne({ _id: ObjectID(itemId), owner: ObjectID(owner) });
+  const item = await ItemModel.findOne({ _id: ObjectID(itemId), owner: ObjectID(owner) });
   if (!item) {
     throw new NotFoundError('Item not found', 'item');
   }
@@ -177,8 +156,8 @@ ItemSchema.statics.updateItem = async function updateItem({ itemId, owner }, ite
 };
 
 ItemSchema.statics.getItem = async function getItem({ itemId, owner }) {
-  const item = ItemModel.findOne({ _id: ObjectID(itemId), owner: ObjectID(owner) });
-  if (item) {
+  const item = await ItemModel.findOne({ _id: ObjectID(itemId), owner: ObjectID(owner) });
+  if (!item) {
     throw new NotFoundError('Item not found', 'item');
   }
 
@@ -192,9 +171,20 @@ ItemSchema.methods.update = async function update(itemData) {
 };
 
 ItemSchema.methods.delete = async function deleteData() {
-  this.status = config.get('itemStatus.delete');
+  this.status = config.get('itemStatus.deleted');
 
   await this.save();
+};
+
+ItemSchema.methods.deleteRecursive = async function deleteRecursive() {
+  const items = await ItemModel.find({
+    parentIds: ObjectID(this._id), owner: this.owner,
+  });
+  await bluebird.map(items, async (item) => {
+    await item.delete();
+  });
+
+  return this.delete();
 };
 
 ItemSchema.methods.generatePath = function generatePath() {
@@ -209,6 +199,20 @@ ItemSchema.methods.generatePath = function generatePath() {
   itemPath = path.join(itemPath, String(this._id));
 
   return itemPath;
+};
+
+ItemSchema.methods.getStoragesUsedSpaces = async function getStoragesUsedSpaces() {
+  const items = await ItemModel.find({
+    parentIds: ObjectID(this._id), owner: this.owner, type: config.get('itemType.file'),
+  });
+  return items.reduce((acc, item) => {
+    if (!acc[item.storageId]) {
+      acc[item.storageId] = 0;
+    }
+
+    acc[item.storageId] += item.size;
+    return acc;
+  }, {});
 };
 
 ItemModel = Mongoose.model('Item', ItemSchema);

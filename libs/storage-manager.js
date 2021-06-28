@@ -57,7 +57,7 @@ class StorageManager {
 
     return {
       id: storage.id,
-      path: path.join(storageMountPath, storage.id),
+      path: path.join(storageMountPath, storage.name),
     };
   }
 

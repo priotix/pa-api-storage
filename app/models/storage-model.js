@@ -83,7 +83,7 @@ StorageSchema.statics.getFittingStorage = async function getFittingStorage(fileS
   return storage;
 };
 
-StorageSchema.statics.changeUsedStorage = async function changeUsedStorage(usedStorageDiffs) {
+StorageSchema.statics.changeUsedStorages = async function changeUsedStorages(usedStorageDiffs) {
   await bluebird.map(Object.keys(usedStorageDiffs), async (storageId) => {
     const storage = await StorageModel.findOne({ _id: ObjectID(storageId) });
 

@@ -53,7 +53,7 @@ class ItemController {
       if (parentData.type !== config.get('itemType.dir')) {
         throw new BadRequest('Invalide parent', 'item-parent');
       }
-      itemData.parents = await ItemModel.getItemParents(parent);
+      itemData.parentIds = await ItemModel.getItemParents(parent);
     }
     const item = await ItemModel.createItem(itemData);
 
@@ -82,23 +82,22 @@ class ItemController {
     const { itemId } = ctx.params;
     const owner = Identity.getUserId(ctx);
 
-    const item = await ItemModel.getItem({ id: itemId, owner });
+    const item = await ItemModel.getItem({ itemId, owner });
     if (item.type === config.get('itemType.file')) {
       fs.unlinkSync(item.path);
       await item.delete();
       await UserModel.changeUsedStorage(owner, -item.size);
-      await StorageModel.changeUsedStorage([{ id: item.storageId, size: item.size }]);
+      await StorageModel.changeUsedStorages([{ id: item.storageId, size: -item.size }]);
     } else {
       const storagesUsedSpaces = await item.getStoragesUsedSpaces();
       await StorageModel.changeUsedStorages(storagesUsedSpaces);
-      const userUsedSpace = storagesUsedSpaces.reduce((acc, space) => {
+      const userUsedSpace = Object.values(storagesUsedSpaces).reduce((acc, space) => {
         acc += space;
         return acc;
       }, 0);
       await UserModel.changeUsedStorage(owner, -userUsedSpace);
-      await item.deleteRecursive(item);
+      await item.deleteRecursive();
     }
-
 
     ctx.status = 200;
   }
@@ -120,12 +119,14 @@ class ItemController {
 
     const owner = Identity.getUserId(ctx);
     itemData.owner = owner;
+    itemData.type = config.get('itemType.dir');
+    itemData.status = config.get('itemStatus.active');
     if (parent) {
       const parentData = await ItemModel.getItem({ itemId: parent, owner });
       if (parentData.type !== config.get('itemType.dir')) {
         throw new BadRequest('Invalide parent', 'item-parent');
       }
-      itemData.parents = await ItemModel.getItemParents(parent);
+      itemData.parentIds = await ItemModel.getItemParents(parent);
     }
 
     const item = await ItemModel.createItem(itemData);
