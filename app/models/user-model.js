@@ -59,7 +59,7 @@ UserSchema.statics.getUserFreeSpace = async function getUserFreeSpace(userId) {
     throw new NotFoundError('User not found', 'user');
   }
 
-  return user.userTypeId.size - user.usedStorageSize;
+  return { free: user.userTypeId.size - user.usedStorageSize, total: user.userTypeId.size };
 };
 
 UserSchema.statics.changeUsedStorage = async function changeUsedStorage(userId, storageDiff) {
