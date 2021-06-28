@@ -83,6 +83,20 @@ StorageSchema.statics.getFittingStorage = async function getFittingStorage(fileS
   return storage;
 };
 
+StorageSchema.statics.changeUsedStorage = async function changeUsedStorage(usedStorageDiffs) {
+  await bluebird.map(Object.keys(usedStorageDiffs), async (storageId) => {
+    const storage = await StorageModel.findOne({ _id: ObjectID(storageId) });
+
+    if (!storage) {
+      return;
+    }
+
+    storage.freeSpace += usedStorageDiffs[storageId];
+
+    await storage.save();
+  });
+};
+
 StorageSchema.methods.updateData = async function updateData(data) {
   lodash.extend(this, data);
 
