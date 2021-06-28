@@ -84,7 +84,7 @@ class ItemController {
 
     const item = await ItemModel.getItem({ itemId, owner });
     if (item.type === config.get('itemType.file')) {
-      fs.unlinkSync(item.path);
+      await StorageManager.removeFile(item.path);
       await item.delete();
       await UserModel.changeUsedStorage(owner, -item.size);
       await StorageModel.changeUsedStorages([{ id: item.storageId, size: -item.size }]);

@@ -1,20 +1,19 @@
-const fs = require('fs');
 const path = require('path');
 const config = require('config');
 const { StorageModel } = require('../app/models/storage-model');
 const { UserModel } = require('../app/models/user-model');
 
 const storageMountPath = config.get('storageMountPath');
+
+const storageAdapter = require('../storage-adopter/storage-adapter-factorey').getStorageAdapter('local');
+
 class StorageManager {
   static async saveStream(filePath, readStream, size) {
     const { id: storageId, path: storagePath } = await this.getFittingStoragePath(size);
 
     const fullPath = path.join(storagePath, filePath);
-    const dirPath = fullPath.slice(0, fullPath.lastIndexOf('/'));
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true });
-    }
-    const fileWriteStream = fs.createWriteStream(fullPath);
+
+    const fileWriteStream = await storageAdapter.createWriteStream(fullPath);
 
     const stream = readStream.pipe(fileWriteStream);
 
@@ -31,7 +30,7 @@ class StorageManager {
 
     fileWriteStream.on('close', () => {
       if (!isFileSizeCorrect) {
-        fs.unlinkSync(fullPath);
+        storageAdapter.removeFileSync(fullPath);
       }
     });
 
@@ -49,6 +48,10 @@ class StorageManager {
     }
 
     return null;
+  }
+
+  static async removeFile(filePath) {
+    return storageAdapter.removeFile(filePath);
   }
 
   static async getFittingStoragePath(fileSize) {
