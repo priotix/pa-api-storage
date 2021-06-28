@@ -10,6 +10,7 @@ const { ItemModel } = require('../../app/models/item-model');
 const PayloadToLarge = require('../../libs/errors/payload-too-large');
 const BadRequest = require('../../libs/errors/bad-request-error');
 const { UserModel } = require('../../app/models/user-model');
+const { StorageModel } = require('../../app/models/storage-model');
 
 const defaultFileSize = config.get('defaultFileSize');
 class ItemController {
@@ -48,11 +49,21 @@ class ItemController {
     itemData.owner = owner;
     itemData.type = config.get('itemType.file');
     if (parent) {
+      const parentData = await ItemModel.getItem({ itemId: parent, owner });
+      if (parentData.type !== config.get('itemType.dir')) {
+        throw new BadRequest('Invalide parent', 'item-parent');
+      }
       itemData.parents = await ItemModel.getItemParents(parent);
     }
-
     const item = await ItemModel.createItem(itemData);
-    const fileMeta = await StorageManager.saveStream(item.generatePath(), ctx.filemeta.file, size);
+
+    let fileMeta;
+    try {
+      fileMeta = await StorageManager.saveStream(item.generatePath(), ctx.filemeta.file, size);
+    } catch (err) {
+      throw new BadRequest('Unable to store contect', 'stream');
+    }
+
     if (!fileMeta) {
       throw new BadRequest('File is larger then requested', 'storage');
     }
@@ -74,11 +85,20 @@ class ItemController {
     const item = await ItemModel.getItem({ id: itemId, owner });
     if (item.type === config.get('itemType.file')) {
       fs.unlinkSync(item.path);
+      await item.delete();
+      await UserModel.changeUsedStorage(owner, -item.size);
+      await StorageModel.changeUsedStorage([{ id: item.storageId, size: item.size }]);
     } else {
-      fs.rmdirSync(item.path, { recursive: true });
+      const storagesUsedSpaces = await item.getStoragesUsedSpaces();
+      await StorageModel.changeUsedStorages(storagesUsedSpaces);
+      const userUsedSpace = storagesUsedSpaces.reduce((acc, space) => {
+        acc += space;
+        return acc;
+      }, 0);
+      await UserModel.changeUsedStorage(owner, -userUsedSpace);
+      await item.deleteRecursive(item);
     }
-    await item.delete();
-    await UserModel.changeUsedStorage(owner, -item.size);
+
 
     ctx.status = 200;
   }
@@ -98,9 +118,16 @@ class ItemController {
     const { name, parent } = ctx.request.body;
     const itemData = { name };
 
+    const owner = Identity.getUserId(ctx);
+    itemData.owner = owner;
     if (parent) {
+      const parentData = await ItemModel.getItem({ itemId: parent, owner });
+      if (parentData.type !== config.get('itemType.dir')) {
+        throw new BadRequest('Invalide parent', 'item-parent');
+      }
       itemData.parents = await ItemModel.getItemParents(parent);
     }
+
     const item = await ItemModel.createItem(itemData);
 
     ctx.status = 200;

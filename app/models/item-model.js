@@ -89,6 +89,8 @@ ItemSchema.statics.listItems = async function listItems(payload) {
   findQuery.status = config.get('itemStatus.active');
   if (parent) {
     findQuery['parentIds.0'] = ObjectID(parent);
+  } else {
+    findQuery['parentIds.0'] = { $exists: false };
   }
   if (owner) {
     findQuery.owner = ObjectID(owner);
@@ -110,7 +112,7 @@ ItemSchema.statics.searchItems = async function searchItems(payload) {
     filter,
     sort,
     skip = 0,
-    limit = 20,
+    limit = 1000,
   } = payload;
 
   const { owner, query, ...findQuery } = filter;

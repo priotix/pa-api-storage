@@ -35,7 +35,10 @@ class StorageManager {
       }
     });
 
-    await new Promise((resolve) => stream.on('finish', resolve));
+    await new Promise((resolve, reject) => {
+      stream.on('finish', resolve);
+      stream.on('error', reject);
+    });
 
     if (isFileSizeCorrect) {
       return {
