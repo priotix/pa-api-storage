@@ -41,9 +41,6 @@ service.validateToken = async function validateToken(token, audience) {
     headers: {
       Authorization: token,
     },
-    qs: {
-      audience,
-    },
     method: 'GET',
   };
 
