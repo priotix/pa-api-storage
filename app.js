@@ -57,11 +57,13 @@ mainRouter.get('/', async (ctx) => {
 
 // ------------ Load Routers ------------ //
 const itemRouter = require('./api/routes/item-router');
+const userRouter = require('./api/routes/user-router');
 const partnerUsersRouter = require('./api-partner/routes/user-router');
 
 // ---------- Connect Routers ---------- //
 app.use(mainRouter.routes());
 app.use(itemRouter.routes());
+app.use(userRouter.routes());
 app.use(partnerUsersRouter.routes());
 
 module.exports = app;
