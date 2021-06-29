@@ -9,15 +9,6 @@ schemes.listItems = {
     skip: Joi.number(),
     sort: Joi.string(),
     parent: Joi.string(),
-    type: Joi.string().valid(config.get('itemTypeList')),
-  }),
-};
-
-schemes.searchItems = {
-  query: Joi.object().keys({
-    limit: Joi.number(),
-    skip: Joi.number(),
-    sort: Joi.string(),
     query: Joi.string(),
     type: Joi.string().valid(config.get('itemTypeList')),
   }),

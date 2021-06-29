@@ -94,41 +94,20 @@ ItemSchema.statics.listItems = async function listItems(payload) {
     limit = 1000,
   } = payload;
 
-  const { parent, owner, ...findQuery } = filter;
+  const {
+    parent, owner, query, ...findQuery
+  } = filter;
   findQuery.status = config.get('itemStatus.active');
   if (parent) {
     findQuery['parentIds.0'] = ObjectID(parent);
-  } else {
+  } else if (!query) {
     findQuery['parentIds.0'] = { $exists: false };
+  }
+  if (query) {
+    findQuery.name = new RegExp(`.*${query}.*`, 'i');
   }
   if (owner) {
     findQuery.owner = ObjectID(owner);
-  }
-
-  const resp = await bluebird.all([
-    ItemModel.find(findQuery).sort(sort).skip(skip).limit(limit),
-    ItemModel.find(findQuery).countDocuments(),
-  ]);
-
-  return {
-    documents: resp[0],
-    total: resp[1],
-  };
-};
-
-ItemSchema.statics.searchItems = async function searchItems(payload) {
-  const {
-    filter,
-    sort,
-    skip = 0,
-    limit = 1000,
-  } = payload;
-
-  const { owner, query, ...findQuery } = filter;
-  findQuery.status = config.get('itemStatus.active');
-  findQuery.owner = ObjectID(owner);
-  if (query) {
-    findQuery.name = new RegExp(`.*${query}.*`, 'i');
   }
 
   const resp = await bluebird.all([

@@ -18,13 +18,6 @@ itemRouter.get(
   itemCtrl.listItems,
 );
 
-itemRouter.get(
-  '/items/search',
-  authorize,
-  validate(itemSchema.searchItems),
-  itemCtrl.searchItems,
-);
-
 itemRouter.post(
   '/items',
   authorize,
