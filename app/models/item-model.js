@@ -128,7 +128,7 @@ ItemSchema.statics.searchItems = async function searchItems(payload) {
   findQuery.status = config.get('itemStatus.active');
   findQuery.owner = ObjectID(owner);
   if (query) {
-    findQuery.name = new RegExp(`.*${query}*.`, 'i');
+    findQuery.name = new RegExp(`.*${query}.*`, 'i');
   }
 
   const resp = await bluebird.all([
