@@ -59,10 +59,12 @@ class ItemController {
     try {
       fileMeta = await StorageManager.saveStream(item.generatePath(), ctx.filemeta.file, size);
     } catch (err) {
+      await item.delete();
       throw new BadRequest('Unable to store contect', 'stream');
     }
 
     if (!fileMeta) {
+      await item.delete();
       throw new BadRequest('File is larger then requested', 'storage');
     }
 
