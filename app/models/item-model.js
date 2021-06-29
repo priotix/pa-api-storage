@@ -36,6 +36,9 @@ const ItemSchema = new Mongoose.Schema({
     enum: config.get('itemTypeList'),
     required: true,
   },
+  deletedAt: {
+    type: Date,
+  },
   path: {
     type: String,
   },
@@ -191,6 +194,7 @@ ItemSchema.methods.update = async function update(itemData) {
 
 ItemSchema.methods.delete = async function deleteData() {
   this.status = config.get('itemStatus.deleted');
+  this.deletedAt = new Date();
 
   await this.save();
 };
