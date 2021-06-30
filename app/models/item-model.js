@@ -133,7 +133,7 @@ ItemSchema.statics.listItems = async function listItems(payload) {
   };
 };
 
-ItemSchema.statics.getItem = async function getItem(itemId, owner) {
+ItemSchema.statics.getItem = async function getItem({ itemId, owner }) {
   const item = await ItemModel.findOne({
     _id: ObjectID(itemId),
     owner: ObjectID(owner),
