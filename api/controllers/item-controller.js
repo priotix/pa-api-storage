@@ -7,7 +7,7 @@ const StorageManager = require('../../libs/storage-manager');
 const { ItemModel } = require('../../app/models/item-model');
 
 const PayloadToLarge = require('../../libs/errors/payload-too-large');
-const BadRequest = require('../../libs/errors/bad-request-error');
+const BadRequestError = require('../../libs/errors/bad-request-error');
 const { UserModel } = require('../../app/models/user-model');
 
 const defaultFileSize = config.get('defaultFileSize');
@@ -49,7 +49,7 @@ class ItemController {
     if (parent) {
       const parentData = await ItemModel.getItem({ itemId: parent, owner });
       if (parentData.type !== config.get('itemType.dir')) {
-        throw new BadRequest('Invalide parent', 'item-parent');
+        throw new BadRequestError('Invalide parent', 'item-parent');
       }
       itemData.parentIds = await ItemModel.getItemParents(parent);
     }
@@ -60,15 +60,19 @@ class ItemController {
       fileMeta = await StorageManager.saveStream(item.generatePath(), ctx.filemeta.file, size);
     } catch (err) {
       await item.delete();
-      throw new BadRequest('Unable to store contect', 'stream');
+      throw new BadRequestError('Unable to store contect', 'stream');
     }
 
     if (!fileMeta) {
       await item.delete();
-      throw new BadRequest('File is larger then requested', 'storage');
+      throw new BadRequestError('File is larger then requested', 'storage');
     }
 
-    await item.update({ ...fileMeta, status: config.get('itemStatus.active') });
+    try {
+      await item.update({ ...fileMeta, status: config.get('itemStatus.active') });
+    } catch (err) {
+      throw new BadRequestError('Invalide data', 'item-data');
+    }
 
     const fileSize = fileMeta.size;
 
@@ -135,7 +139,7 @@ class ItemController {
     if (parent) {
       const parentData = await ItemModel.getItem({ itemId: parent, owner });
       if (parentData.type !== config.get('itemType.dir')) {
-        throw new BadRequest('Invalide parent', 'item-parent');
+        throw new BadRequestError('Invalide parent', 'item-parent');
       }
       itemData.parentIds = await ItemModel.getItemParents(parent);
     }
