@@ -25,6 +25,12 @@ itemRouter.post(
   itemCtrl.createItem,
 );
 
+itemRouter.get(
+  '/items/:itemId',
+  authorize,
+  itemCtrl.getItem,
+);
+
 itemRouter.put(
   '/items/:itemId',
   authorize,

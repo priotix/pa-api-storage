@@ -133,6 +133,29 @@ ItemSchema.statics.listItems = async function listItems(payload) {
   };
 };
 
+ItemSchema.statics.getItem = async function getItem(itemId, owner) {
+  const item = await ItemModel.findOne({
+    _id: ObjectID(itemId),
+    owner: ObjectID(owner),
+    status: config.get('itemStatus.active'),
+  });
+  if (!item) {
+    throw new NotFoundError('Item not found', 'item');
+  }
+
+  if (item.parentIds.length) {
+    const parents = await ItemModel.find({ _id: item.parentIds });
+    const itemPath = path.join(parents.reduceRight((acc, parent) => {
+      acc = path.join(acc, String(parent.name));
+      return acc;
+    }, ''));
+
+    item.path = path.join(itemPath, item.name);
+  }
+
+  return item;
+};
+
 ItemSchema.statics.updateItem = async function updateItem({ itemId, owner }, itemData) {
   const item = await ItemModel.findOne({
     _id: ObjectID(itemId),

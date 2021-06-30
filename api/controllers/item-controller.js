@@ -145,6 +145,16 @@ class ItemController {
     ctx.status = 200;
     ctx.body = item;
   }
+
+  static async getItem(ctx) {
+    const { itemId } = ctx.params;
+    const owner = Identity.getUserId(ctx);
+
+    const item = await ItemModel.getItem(itemId, owner);
+
+    ctx.status = 200;
+    ctx.body = item;
+  }
 }
 
 module.exports = ItemController;
