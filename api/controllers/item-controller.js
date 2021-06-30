@@ -154,7 +154,7 @@ class ItemController {
     const { itemId } = ctx.params;
     const owner = Identity.getUserId(ctx);
 
-    const item = await ItemModel.getItem(itemId, owner);
+    const item = await ItemModel.getItemWithPath({ itemId, owner });
 
     ctx.status = 200;
     ctx.body = item;
