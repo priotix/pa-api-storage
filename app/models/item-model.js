@@ -216,7 +216,7 @@ ItemSchema.methods.generatePath = function generatePath() {
   let itemPath = `${String(this.owner)}`;
   if (this.parentIds) {
     itemPath = path.join(this.parentIds.reduce((acc, parent, index) => {
-      acc = path.join(acc, this.parents[this.parents.length - 1 - index].name);
+      acc = path.join(acc, this.parentIds[this.parentIds.length - 1 - index].name);
       return acc;
     }, ''));
   }
