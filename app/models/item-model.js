@@ -119,7 +119,7 @@ ItemSchema.statics.listItems = async function listItems(payload) {
     documents: await bluebird.map(resp[0], async (doc) => {
       let itemPath = '';
       if (doc.parentIds.length) {
-        const parents = await ItemModel.find({ _id: doc.parentIds });
+        const parents = await ItemModel.find({ _id: doc.parentIds }).sort('-createdAt');
         itemPath = path.join(parents.reduce((acc, value, index) => {
           acc = path.join(acc, parents[parents.length - 1 - index].name);
           return acc;
@@ -144,7 +144,7 @@ ItemSchema.statics.getItemWithPath = async function getItemWithPath({ itemId, ow
   }
 
   if (item.parentIds.length) {
-    const parents = await ItemModel.find({ _id: item.parentIds });
+    const parents = await ItemModel.find({ _id: item.parentIds }).sort('-createdAt');
     const itemPath = path.join(parents.reduce((acc, parent, index) => {
       acc = path.join(acc, parents[parents.length - 1 - index].name);
       return acc;
