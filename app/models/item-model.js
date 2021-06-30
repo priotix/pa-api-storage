@@ -120,8 +120,8 @@ ItemSchema.statics.listItems = async function listItems(payload) {
       let itemPath = '';
       if (doc.parentIds.length) {
         const parents = await ItemModel.find({ _id: doc.parentIds });
-        itemPath = path.join(parents.reduceRight((acc, parent) => {
-          acc = path.join(acc, String(parent.name));
+        itemPath = path.join(parents.reduce((acc, value, index) => {
+          acc = path.join(acc, parents[parents.length - 1 - index].name);
           return acc;
         }, ''));
       }
@@ -145,8 +145,8 @@ ItemSchema.statics.getItemWithPath = async function getItemWithPath({ itemId, ow
 
   if (item.parentIds.length) {
     const parents = await ItemModel.find({ _id: item.parentIds });
-    const itemPath = path.join(parents.reduceRight((acc, parent) => {
-      acc = path.join(acc, String(parent.name));
+    const itemPath = path.join(parents.reduce((acc, parent, index) => {
+      acc = path.join(acc, parents[parents.length - 1 - index].name);
       return acc;
     }, ''));
 
@@ -215,10 +215,10 @@ ItemSchema.methods.deleteRecursive = async function deleteRecursive() {
 ItemSchema.methods.generatePath = function generatePath() {
   let itemPath = `${String(this.owner)}`;
   if (this.parentIds) {
-    itemPath = this.parentIds.reduceRight((acc, parent) => {
-      acc = path.join(acc, String(parent));
+    itemPath = path.join(this.parentIds.reduce((acc, parent, index) => {
+      acc = path.join(acc, this.parents[this.parents.length - 1 - index].name);
       return acc;
-    }, itemPath);
+    }, ''));
   }
 
   itemPath = path.join(itemPath, String(this._id));
