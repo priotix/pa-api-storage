@@ -52,4 +52,10 @@ itemRouter.post(
   itemCtrl.uploadItem,
 );
 
+itemRouter.get(
+  '/items/:itemId/info',
+  authorize,
+  itemCtrl.getItemInfo,
+);
+
 module.exports = itemRouter;

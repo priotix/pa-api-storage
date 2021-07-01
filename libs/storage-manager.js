@@ -51,6 +51,11 @@ class StorageManager {
     return null;
   }
 
+  static async getStream(filePath) {
+    const fileReadStream = await storageAdapter.createReadStream(filePath);
+    return fileReadStream;
+  }
+
   static async removeFile(filePath) {
     return storageAdapter.removeFile(filePath);
   }

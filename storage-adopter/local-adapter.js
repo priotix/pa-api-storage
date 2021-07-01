@@ -45,6 +45,10 @@ class LocalAdapter {
 
     return fs.createWriteStream(filePath);
   }
+
+  static async createReadStream(filePath) {
+    return fs.createReadStream(filePath);
+  }
 }
 
 module.exports = LocalAdapter;

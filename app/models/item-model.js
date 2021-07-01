@@ -175,12 +175,17 @@ ItemSchema.statics.updateItem = async function updateItem({ itemId, owner }, ite
   return item;
 };
 
-ItemSchema.statics.getItem = async function getItem({ itemId, owner }) {
-  const item = await ItemModel.findOne({
+ItemSchema.statics.getItem = async function getItem({ itemId, owner, type }) {
+  const query = {
     _id: ObjectID(itemId),
     owner: ObjectID(owner),
     status: config.get('itemStatus.active'),
-  });
+  };
+  if (type) {
+    query.type = type;
+  }
+
+  const item = await ItemModel.findOne(query);
   if (!item) {
     throw new NotFoundError('Item not found', 'item');
   }

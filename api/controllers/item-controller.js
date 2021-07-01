@@ -150,7 +150,7 @@ class ItemController {
     ctx.body = item;
   }
 
-  static async getItem(ctx) {
+  static async getItemInfo(ctx) {
     const { itemId } = ctx.params;
     const owner = Identity.getUserId(ctx);
 
@@ -158,6 +158,20 @@ class ItemController {
 
     ctx.status = 200;
     ctx.body = item;
+  }
+
+  static async getItem(ctx) {
+    const { itemId } = ctx.params;
+    const owner = Identity.getUserId(ctx);
+
+    const item = await ItemModel.getItem({ itemId, owner, type: config.get('itemType.file') });
+
+    const file = await StorageManager.getStream(item.path);
+
+    ctx.response.set('Content-disposition', `attachment; filename=${item.name}`);
+    ctx.response.set('Content-type', 'application/txt');
+    ctx.status = 200;
+    ctx.body = file;
   }
 }
 
