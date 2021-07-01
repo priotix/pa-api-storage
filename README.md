@@ -8,13 +8,9 @@ cp .env.dist .env
 
 in .env replace templates with real values
 
-```
-HOST_ENV={{env}}
-NODE_ENV={{env}}
-DB_PSWD={{db-password}}
-DB_CONNECTION_STRING={{db-connection-string}}
-DB_READ_PREFERENCE={{primaryPreferred|secondary|secondaryPreferred|nearest}}
-API_AUTH_HOST={{api-auth-host}}
-AUTHORIZATION_KEY={{authorization-key}}
+here is example of db env for local setup (with docker network)
+
 ```
 
+DB_CONNECTION_STRING=mongodb://pa-storage-db/api-storage
+```
